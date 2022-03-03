@@ -20,5 +20,6 @@ The res will be reserved into the frame props of output.
 
 ##Build
 you can use the code below to build the plugin by youself.
-```clang++ -o "complane.dll" complane.cpp "VCL2/instrset_detect.cpp" complane_psnr.cpp -g -Wall -static-libgcc -fcolor-diagnostics --target=x86_64-w64-mingw -std=c++1z -lstdc++ -I D:/path/to/vapoursynth-classic/include -mavx2 -mfma -msse2 -shared -fno-exceptions
+```
+clang++ -o "complane.dll" complane.cpp "VCL2/instrset_detect.cpp" complane_psnr.cpp -g -Wall -static-libgcc -fcolor-diagnostics --target=x86_64-w64-mingw -std=c++1z -lstdc++ -I D:/path/to/vapoursynth-classic/include -mavx2 -mfma -msse2 -shared -fno-exceptions
 ```
