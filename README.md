@@ -17,3 +17,8 @@ The res will be reserved into the frame props of output.
   - ```cache```: Whether the output should be cache or not. Disabling cache maybe imporove a little bit of performance. If you want to access them later, it's recommand to enable cache.
     - 0: disable
     - 1: enable(default)  
+
+##Build
+you can use the code below to build the plugin by youself.
+```clang++ -o "complane.dll" complane.cpp "VCL2/instrset_detect.cpp" complane_psnr.cpp -g -Wall -static-libgcc -fcolor-diagnostics --target=x86_64-w64-mingw -std=c++1z -lstdc++ -I D:/path/to/vapoursynth-classic/include -mavx2 -mfma -msse2 -shared -fno-exceptions
+```
