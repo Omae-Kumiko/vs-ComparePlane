@@ -15,7 +15,8 @@
 
 #ifndef COMPLANE_CPP
 #define COMPLANE_CPP
-#define _VERSION_ 1.0.0
+#define _VERSION_MAJOR 10
+#define _VERSION_MINOR 0
 #include <stdlib.h>
 #include <stdio.h>
 #include "complane.h"
