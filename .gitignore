@@ -1,0 +1,4 @@
+*.vpy
+.vscode
+.vspreview
+*.dll
