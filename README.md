@@ -14,6 +14,6 @@ The res will be reserved into the frame props of output.
     - 0: auto detect(default)
     - 1: sse2
     - 2: avx2
-  - ```cache```: Whether the output should be cache or not. Disabling cache maybe imporove a little bit of performance. If you want to access them later, it's recommand to enable cache
+  - ```cache```: Whether the output should be cache or not. Disabling cache maybe imporove a little bit of performance. If you want to access them later, it's recommand to enable cache.
     - 0: disable
     - 1: enable(default)  
