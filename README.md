@@ -3,7 +3,7 @@ Optimize for several algorithms for compare images.
 
 ## Usage
 ```python
-core.complane.psnr(clip clip1, clip clip2, int opt, int cache)
+core.complane.PSNR(clip clip1, clip clip2, int opt, int cache)
 ```
 The both input clips must be of GRAY colorFamily and their format must be exactly same. Both 8-16 int and float sample type are allowed.
 The res will be reserved into the frame props of output.
