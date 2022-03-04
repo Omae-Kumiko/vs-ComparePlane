@@ -17,7 +17,10 @@ The res will be reserved into the frame props of output.
   - ```cache```: Whether the output should be cache or not. Disabling cache maybe imporove a little bit of performance. If you want to access them later, it's recommand to enable cache.
     - 0: disable
     - 1: enable(default)  
-
+```python
+core.complane.Version()
+```
+Get Version.
 ## Build
 you can use the code below to build the plugin by youself.
 ```
