@@ -17,7 +17,6 @@
 #define COMPLANE_CPP
 #define COMPLANE_VERSION "1.0.1"
 #include <stdlib.h>
-#include <stdio.h>
 #include "complane.h"
 
 template<typename pixel_t> extern float complane_psnr_avx2(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept;

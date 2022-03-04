@@ -3,7 +3,6 @@
 #ifndef COMPLANE_PSNR_CPP
 #define COMPLANE_PSNR_CPP
 #include "complane.h"
-#include <stdio.h>
 #include <cmath>
 template<typename pixel_t> float complane_psnr_avx2(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept{
     const pixel_t *src1p = reinterpret_cast<const pixel_t*>(_src1p);
