@@ -12,6 +12,6 @@ struct ComparePlaneData final
     const VSVideoInfo* vi_2;
     uint8_t opt;
     uint8_t cache;
-    float (*getpsnr)(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept; //Get psnr score function.
+    float (*getPSNR)(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept; //Get psnr score function.
 };
 #endif // !COMPLANE_H

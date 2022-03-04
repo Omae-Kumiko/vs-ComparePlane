@@ -16,7 +16,7 @@
 #ifndef COMPLANE_CPP
 #define COMPLANE_CPP
 #define _VERSION_MAJOR 10
-#define _VERSION_MINOR 0
+#define _VERSION_MINOR 1
 #include <stdlib.h>
 #include <stdio.h>
 #include "complane.h"
@@ -25,13 +25,13 @@ template<typename pixel_t> extern float complane_psnr_avx2(const void* _src1p, c
 template<typename pixel_t> extern float complane_psnr_sse2(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept;
 
 //This functione iniates the psnr filter.
-static void VS_CC psnrInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
+static void VS_CC PSNRInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
     ComparePlaneData *d = (ComparePlaneData *) * instanceData;
     vsapi->setVideoInfo(d->vi_1, 1, node);
 }
 
 //This function is responsible for getting the psnr score.
-static const VSFrameRef *VS_CC psnrGet(int n, int activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
+static const VSFrameRef *VS_CC PSNRGet(int n, int activationReason, void **instanceData, void **frameData, VSFrameContext *frameCtx, VSCore *core, const VSAPI *vsapi) {
     ComparePlaneData *d = (ComparePlaneData *) * instanceData;
     if (activationReason == arInitial) {
         // Request the source frame on the first call
@@ -50,7 +50,7 @@ static const VSFrameRef *VS_CC psnrGet(int n, int activationReason, void **insta
         const void *src2p = vsapi->getReadPtr(src2, 0);
         const int32_t stride = vsapi->getStride(src1, 0) / d->vi_1->format->bytesPerSample;
         VSMap *prop = vsapi->getFramePropsRW(dst);
-        const float psnr = d->getpsnr(src1p, src2p, width, height, stride, d);
+        const float psnr = d->getPSNR(src1p, src2p, width, height, stride, d);
         vsapi->propSetFloat(prop, "PlanePSNR", psnr, paReplace);
         // Release the source frame
         vsapi->freeFrame(src1);
@@ -61,7 +61,7 @@ static const VSFrameRef *VS_CC psnrGet(int n, int activationReason, void **insta
 }
 
 //This function frees the psnr filter.
-static void VS_CC psnrFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
+static void VS_CC PSNRFree(void *instanceData, VSCore *core, const VSAPI *vsapi) {
     ComparePlaneData *d = (ComparePlaneData *)instanceData;
     vsapi->freeNode(d->node1);
     vsapi->freeNode(d->node2);
@@ -69,7 +69,7 @@ static void VS_CC psnrFree(void *instanceData, VSCore *core, const VSAPI *vsapi)
 }
 
 //This function creates the psnr filter.
-static void VS_CC psnrCreate(const VSMap *in, VSMap *out, void *userData, VSCore *core, const VSAPI *vsapi) {
+static void VS_CC PSNRCreate(const VSMap *in, VSMap *out, void *userData, VSCore *core, const VSAPI *vsapi) {
     
     ComparePlaneData d;
     ComparePlaneData *data;
@@ -82,28 +82,28 @@ static void VS_CC psnrCreate(const VSMap *in, VSMap *out, void *userData, VSCore
     {
         vsapi->freeNode(d.node1);
         vsapi->freeNode(d.node2);
-        vsapi->setError(out, "psnr:The Para 'clip1' and 'clip2' must be set.");
+        vsapi->setError(out, "PSNR:The Para 'clip1' and 'clip2' must be set.");
         return;        
     }
     if (d.vi_1->format->colorFamily != cmGray || d.vi_2->format->colorFamily != cmGray)
     {
         vsapi->freeNode(d.node1);
         vsapi->freeNode(d.node2);
-        vsapi->setError(out, "psnr: The colorFamily of input clips must be Gray.");
+        vsapi->setError(out, "PSNR: The colorFamily of input clips must be Gray.");
         return;
     }
     if (d.vi_1->format->id != d.vi_2->format->id)
     {
         vsapi->freeNode(d.node1);
         vsapi->freeNode(d.node2);
-        vsapi->setError(out, "psnr: The formats of input clips must be same.");
+        vsapi->setError(out, "PSNR: The formats of input clips must be same.");
         return;
     }
     if (d.vi_1->height != d.vi_2->height || d.vi_1->width != d.vi_2->width)
     {
         vsapi->freeNode(d.node1);
         vsapi->freeNode(d.node2);
-        vsapi->setError(out, "psnr: The dimension of input clips must be same.");
+        vsapi->setError(out, "PSNR: The dimension of input clips must be same.");
         return;
     }
     err = 0;
@@ -113,7 +113,7 @@ static void VS_CC psnrCreate(const VSMap *in, VSMap *out, void *userData, VSCore
     if (d.opt < 0) {
         vsapi->freeNode(d.node1);
         vsapi->freeNode(d.node2);
-        vsapi->setError(out, "psnr: The 'opt' must be Positive");
+        vsapi->setError(out, "PSNR: The 'opt' must be Positive");
         return;
     }
     err = 0;
@@ -127,29 +127,29 @@ static void VS_CC psnrCreate(const VSMap *in, VSMap *out, void *userData, VSCore
     const int32_t iset = instrset_detect();
     if (d.opt == 0){
         if(iset >= 8){
-            if (data->vi_1->format->bytesPerSample == 1) data->getpsnr = complane_psnr_avx2<uint8_t>;
-            else if (data->vi_1->format->bytesPerSample == 2) data->getpsnr = complane_psnr_avx2<uint16_t>;
-            else if (data->vi_1->format->bytesPerSample == 4) data->getpsnr = complane_psnr_avx2<float_t>;
+            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_psnr_avx2<uint8_t>;
+            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_psnr_avx2<uint16_t>;
+            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_psnr_avx2<float_t>;
         }else if(iset>=2) {
-            if (data->vi_1->format->bytesPerSample == 1) data->getpsnr = complane_psnr_sse2<uint8_t>;
-            else if (data->vi_1->format->bytesPerSample == 2) data->getpsnr = complane_psnr_sse2<uint16_t>;
-            else if (data->vi_1->format->bytesPerSample == 4) data->getpsnr = complane_psnr_sse2<float_t>;         
+            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_psnr_sse2<uint8_t>;
+            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_psnr_sse2<uint16_t>;
+            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_psnr_sse2<float_t>;         
         }
     }
     else if (d.opt >= 2){
-            if (data->vi_1->format->bitsPerSample == 8) data->getpsnr = complane_psnr_avx2<uint8_t>;
-            else if (data->vi_1->format->bitsPerSample == 16) data->getpsnr = complane_psnr_avx2<uint16_t>;
-            else if (data->vi_1->format->bitsPerSample == 32) data->getpsnr = complane_psnr_avx2<float_t>;
+            if (data->vi_1->format->bitsPerSample == 8) data->getPSNR = complane_psnr_avx2<uint8_t>;
+            else if (data->vi_1->format->bitsPerSample == 16) data->getPSNR = complane_psnr_avx2<uint16_t>;
+            else if (data->vi_1->format->bitsPerSample == 32) data->getPSNR = complane_psnr_avx2<float_t>;
     }else if (d.opt == 1){
-            if (data->vi_1->format->bytesPerSample == 1) data->getpsnr = complane_psnr_sse2<uint8_t>;
-            else if (data->vi_1->format->bytesPerSample == 2) data->getpsnr = complane_psnr_sse2<uint16_t>;
-            else if (data->vi_1->format->bytesPerSample == 4) data->getpsnr = complane_psnr_sse2<float_t>;  
+            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_psnr_sse2<uint8_t>;
+            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_psnr_sse2<uint16_t>;
+            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_psnr_sse2<float_t>;  
     }
-    vsapi->createFilter(in, out, "psnr", psnrInit, psnrGet, psnrFree, fmParallel, d.cache==1? 0:nfNoCache, data, core);
+    vsapi->createFilter(in, out, "psnr", PSNRInit, PSNRGet, PSNRFree, fmParallel, d.cache==1? 0:nfNoCache, data, core);
 }
 
 VS_EXTERNAL_API(void) VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegisterFunction registerFunc, VSPlugin *plugin) {
     configFunc("com.amusementclub.complane", "complane", "VapourSynth compare plane and get score", VAPOURSYNTH_API_VERSION, 1, plugin);
-    registerFunc("psnr", "clip1:clip;clip2:clip;opt:int:opt;cache:int:opt", psnrCreate, 0, plugin);
+    registerFunc("PSNR", "clip1:clip;clip2:clip;opt:int:opt;cache:int:opt", PSNRCreate, 0, plugin);
 }
 #endif // !COMPLANE_CPP

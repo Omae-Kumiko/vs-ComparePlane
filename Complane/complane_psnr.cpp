@@ -36,6 +36,7 @@ template<typename pixel_t> float complane_psnr_avx2(const void* _src1p, const vo
             src2p += stirde;
         }
         float MSE = 1.0f * diffsum / (height*width);
+        MSE = MSE > 1e-8? MSE : 1e-8;
         psnr = 10 * std::log10(max_val * max_val / MSE);
     } else if constexpr (std::is_same_v<pixel_t,uint16_t>){     //for 10-bit and 16-bit input  
         int64_t diffsum = 0;
@@ -62,6 +63,7 @@ template<typename pixel_t> float complane_psnr_avx2(const void* _src1p, const vo
             src2p += stirde;
         }
         float MSE = 1.0f * diffsum / (height*width);
+        MSE = MSE > 1e-8? MSE : 1e-8;
         psnr = 10 * std::log10(max_val * max_val / MSE);
     }
     else if constexpr (std::is_same_v<pixel_t, float_t>){     //for float input  
@@ -83,6 +85,7 @@ template<typename pixel_t> float complane_psnr_avx2(const void* _src1p, const vo
             }
         // }
         float MSE = diffsum / (1.0*height*width);
+        MSE = MSE > 1e-8? MSE : 1e-8;
         psnr = -10 * std::log10(MSE);
     }
     psnr = psnr>100? 100 : psnr;
@@ -125,6 +128,7 @@ template<typename pixel_t> float complane_psnr_sse2(const void* _src1p, const vo
             src2p += stirde;
         }
         float MSE = 1.0f * diffsum / (height*width);
+        MSE = MSE > 1e-8? MSE : 1e-8;
         psnr = 10 * std::log10(max_val * max_val / MSE);
     } else if constexpr (std::is_same_v<pixel_t,uint16_t>){     //for 10-bit and 16-bit input  
         int64_t diffsum = 0;
@@ -155,6 +159,7 @@ template<typename pixel_t> float complane_psnr_sse2(const void* _src1p, const vo
             src2p += stirde;
         }
         float MSE = 1.0f * diffsum / (height*width);
+        MSE = MSE > 1e-8? MSE : 1e-8;
         psnr = 10 * std::log10(max_val * max_val / MSE);
     }
     else if constexpr (std::is_same_v<pixel_t, float_t>){     //for float input  
@@ -176,6 +181,7 @@ template<typename pixel_t> float complane_psnr_sse2(const void* _src1p, const vo
             }
         // }
         float MSE = diffsum / (1.0*height*width);
+        MSE = MSE > 1e-8? MSE : 1e-8;
         psnr = -10 * std::log10(MSE);
     }
     psnr = psnr>100? 100 : psnr;
