@@ -15,8 +15,7 @@
 
 #ifndef COMPLANE_CPP
 #define COMPLANE_CPP
-#define _VERSION_MAJOR 10
-#define _VERSION_MINOR 1
+#define COMPLANE_VERSION "1.0.1"
 #include <stdlib.h>
 #include <stdio.h>
 #include "complane.h"
@@ -147,9 +146,13 @@ static void VS_CC PSNRCreate(const VSMap *in, VSMap *out, void *userData, VSCore
     }
     vsapi->createFilter(in, out, "psnr", PSNRInit, PSNRGet, PSNRFree, fmParallel, d.cache==1? 0:nfNoCache, data, core);
 }
-
+void VS_CC versionCreate(const VSMap *in, VSMap *out, void *user_data, VSCore *core, const VSAPI *vsapi)
+{
+    vsapi->propSetData(out, "version", COMPLANE_VERSION, -1, paAppend);
+}
 VS_EXTERNAL_API(void) VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegisterFunction registerFunc, VSPlugin *plugin) {
     configFunc("com.amusementclub.complane", "complane", "VapourSynth compare plane and get score", VAPOURSYNTH_API_VERSION, 1, plugin);
-    registerFunc("PSNR", "clip1:clip;clip2:clip;opt:int:opt;cache:int:opt", PSNRCreate, 0, plugin);
+    registerFunc("PSNR", "clip1:clip;clip2:clip;opt:int:opt;cache:int:opt", PSNRCreate, nullptr, plugin);
+    registerFunc("Version", "", versionCreate, nullptr, plugin);
 }
 #endif // !COMPLANE_CPP
