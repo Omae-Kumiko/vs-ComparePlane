@@ -10,7 +10,7 @@ The res will be reserved into the frame props of output.
 1. Args:
   - ```clip1```: The clip you want to complete, the result have the same frame data and props (except the added by filter) as this clip.
   - ```clip2```: The other clip.
-  - ```propname```(string): The name of the PSNR score in frameprops you want to set. 
+  - ```propname```(Default:"PlanePSNR"): The name of the PSNR score in frameprops you want to set. 
   - ```opt```: Optimize level:
     - 0: auto detect(default)
     - 1: avx
