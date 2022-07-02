@@ -10,9 +10,10 @@ The res will be reserved into the frame props of output.
 1. Args:
   - ```clip1```: The clip you want to complete, the result have the same frame data and props (except the added by filter) as this clip.
   - ```clip2```: The other clip.
+  - ```propname```(string): The name of the PSNR score in frameprops you want to set. 
   - ```opt```: Optimize level:
     - 0: auto detect(default)
-    - 1: sse2
+    - 1: avx
     - 2: avx2
   - ```cache```: Whether the output should be cache or not. Disabling cache maybe imporove a little bit of performance. If you want to access them later, it's recommand to enable cache.
     - 0: disable
@@ -24,5 +25,9 @@ Get Version.
 ## Build
 you can use the code below to build the plugin by youself.
 ```
-clang++ -o "complane.dll" complane.cpp "VCL2/instrset_detect.cpp" complane_psnr.cpp -g -Wall -static-libgcc -fcolor-diagnostics --target=x86_64-w64-mingw -std=c++1z -lstdc++ -I D:/path/to/vapoursynth-classic/include -mavx2 -mfma -msse2 -shared -fno-exceptions
+"D:\LLVM\bin\clang++.exe" -c complane.cpp -o complane.o -g -Wall -fcolor-diagnostics --target=x86_64-w64-mingw -std=c++1z -I "\path\to\vapoursynth\include" -fno-exceptions
+"D:\LLVM\bin\clang++.exe" -c complane_avx2.cpp -o complane_avx2.o -g -Wall -fcolor-diagnostics --target=x86_64-w64-mingw -std=c++1z -I "\path\to\vapoursynth\include" -fno-exceptions -mavx2
+"D:\LLVM\bin\clang++.exe" -c complane_avx.cpp -o complane_avx.o -g -Wall -fcolor-diagnostics --target=x86_64-w64-mingw -std=c++1z -I "\path\to\vapoursynth\include" -fno-exceptions -mavx
+"D:\LLVM\bin\clang++.exe" -o "\path\to\vapoursynth\vapoursynth64\plugins\complane.dll" complane.o complane_avx2.o complane_avx.o -g -Wall -static-libgcc -fcolor-diagnostics --target=x86_64-w64-mingw -std=c++1z -lstdc++ -shared -fno-exceptions
+del complane.o -o complane_avx2.o complane_avx.o
 ```
