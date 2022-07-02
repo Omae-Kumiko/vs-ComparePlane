@@ -15,12 +15,12 @@
 
 #ifndef COMPLANE_CPP
 #define COMPLANE_CPP
-#define COMPLANE_VERSION "1.0.1"
-#include <stdlib.h>
+#define COMPLANE_VERSION "1.1.0"
 #include "complane.h"
+#include <stdio.h>
 
-template<typename pixel_t> extern float complane_psnr_avx2(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept;
-template<typename pixel_t> extern float complane_psnr_sse2(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept;
+template<typename pixel_t> extern float complane_avx2_psnr(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept;
+template<typename pixel_t> extern float complane_avx_psnr(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept;
 
 //This functione iniates the psnr filter.
 static void VS_CC PSNRInit(VSMap *in, VSMap *out, void **instanceData, VSNode *node, VSCore *core, const VSAPI *vsapi) {
@@ -49,7 +49,8 @@ static const VSFrameRef *VS_CC PSNRGet(int n, int activationReason, void **insta
         const int32_t stride = vsapi->getStride(src1, 0) / d->vi_1->format->bytesPerSample;
         VSMap *prop = vsapi->getFramePropsRW(dst);
         const float psnr = d->getPSNR(src1p, src2p, width, height, stride, d);
-        vsapi->propSetFloat(prop, "PlanePSNR", psnr, paReplace);
+
+        vsapi->propSetFloat(prop, d->propname, psnr, paReplace);
         // Release the source frame
         vsapi->freeFrame(src1);
         vsapi->freeFrame(src2);
@@ -118,30 +119,41 @@ static void VS_CC PSNRCreate(const VSMap *in, VSMap *out, void *userData, VSCore
     d.cache = vsapi->propGetInt(in, "cache", 0, &err);
     if(err) d.cache = 1;
     d.cache = d.cache > 1? 1 : d.cache;
+
+    err = 0;
+    const char* propname = vsapi->propGetData(in, "propname", 0, &err);
+    if(err) 
+    {
+        const char* defaultpropname = "PlanePSNR";
+        strcpy(d.propname, defaultpropname);
+    } else  strcpy(d.propname , propname);
+
     //All checks are done.
 
     data = (ComparePlaneData*) malloc(sizeof(d));
     *data = d;
-    const int32_t iset = instrset_detect();
     if (d.opt == 0){
-        if(iset >= 8){
-            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_psnr_avx2<uint8_t>;
-            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_psnr_avx2<uint16_t>;
-            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_psnr_avx2<float_t>;
-        }else if(iset>=2) {
-            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_psnr_sse2<uint8_t>;
-            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_psnr_sse2<uint16_t>;
-            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_psnr_sse2<float_t>;         
+        if(__builtin_cpu_supports("avx2")){
+            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_avx2_psnr<uint8_t>;
+            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_avx2_psnr<uint16_t>;
+            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_avx2_psnr<float_t>;
+        } else if(__builtin_cpu_supports("avx")) {
+            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_avx_psnr<uint8_t>;
+            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_avx_psnr<uint16_t>;
+            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_avx_psnr<float_t>;         
+        } else {
+            vsapi->setError(out, "PSNR: You system or CPU doesn't support AVX2 or AVX.");
         }
     }
     else if (d.opt >= 2){
-            if (data->vi_1->format->bitsPerSample == 8) data->getPSNR = complane_psnr_avx2<uint8_t>;
-            else if (data->vi_1->format->bitsPerSample == 16) data->getPSNR = complane_psnr_avx2<uint16_t>;
-            else if (data->vi_1->format->bitsPerSample == 32) data->getPSNR = complane_psnr_avx2<float_t>;
-    }else if (d.opt == 1){
-            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_psnr_sse2<uint8_t>;
-            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_psnr_sse2<uint16_t>;
-            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_psnr_sse2<float_t>;  
+            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_avx2_psnr<uint8_t>;
+            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_avx2_psnr<uint16_t>;
+            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_avx2_psnr<float_t>;
+    }
+    else if (d.opt == 1){
+            if (data->vi_1->format->bytesPerSample == 1) data->getPSNR = complane_avx_psnr<uint8_t>;
+            else if (data->vi_1->format->bytesPerSample == 2) data->getPSNR = complane_avx_psnr<uint16_t>;
+            else if (data->vi_1->format->bytesPerSample == 4) data->getPSNR = complane_avx_psnr<float_t>;  
     }
     vsapi->createFilter(in, out, "psnr", PSNRInit, PSNRGet, PSNRFree, fmParallel, d.cache==1? 0:nfNoCache, data, core);
 }
@@ -151,7 +163,7 @@ void VS_CC versionCreate(const VSMap *in, VSMap *out, void *user_data, VSCore *c
 }
 VS_EXTERNAL_API(void) VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegisterFunction registerFunc, VSPlugin *plugin) {
     configFunc("com.amusementclub.complane", "complane", "VapourSynth compare plane and get score", VAPOURSYNTH_API_VERSION, 1, plugin);
-    registerFunc("PSNR", "clip1:clip;clip2:clip;opt:int:opt;cache:int:opt", PSNRCreate, nullptr, plugin);
+    registerFunc("PSNR", "clip1:clip;clip2:clip;propname:data:opt;opt:int:opt;cache:int:opt", PSNRCreate, nullptr, plugin);
     registerFunc("Version", "", versionCreate, nullptr, plugin);
 }
 #endif // !COMPLANE_CPP

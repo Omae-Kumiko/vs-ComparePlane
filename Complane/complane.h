@@ -2,7 +2,6 @@
 #define COMPLANE_H
 #include "VapourSynth.h"
 #include "VSHelper.h"
-#include "VCL2/vectorclass.h"
 
 struct ComparePlaneData final
 {
@@ -12,6 +11,7 @@ struct ComparePlaneData final
     const VSVideoInfo* vi_2;
     uint8_t opt;
     uint8_t cache;
+    char propname[100];
     float (*getPSNR)(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept; //Get psnr score function.
 };
 #endif // !COMPLANE_H
