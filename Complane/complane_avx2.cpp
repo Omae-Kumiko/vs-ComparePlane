@@ -100,8 +100,7 @@ template<typename pixel_t> float complane_avx2_psnr(const void* _src1p, const vo
                 src2 = _mm256_maskload_ps(src2p, load_mask);
             }
             __m256 tmp1 = _mm256_sub_ps(src1, src2);
-            tmp1 = _mm256_mul_ps(tmp1, tmp1);
-            diff = _mm256_add_ps(diff, tmp1);
+            diff = _mm256_fmadd_ps(tmp1, tmp1, diff);
         }
 
         const float_t* difft = (const float_t*) &diff;
