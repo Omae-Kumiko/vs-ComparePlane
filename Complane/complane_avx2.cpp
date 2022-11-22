@@ -111,7 +111,7 @@ template<typename pixel_t> float complane_avx2_psnr(const void* _src1p, const vo
     }
     psnr = psnr>100? 100 : psnr;
     if (psnr>0) return psnr;
-    else return NULL;
+    else return 0;
 }
 template float complane_avx2_psnr<uint8_t>(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept;
 template float complane_avx2_psnr<uint16_t>(const void* _src1p, const void* _src2p, const uint16_t width, const uint16_t height, const ptrdiff_t stirde, const ComparePlaneData* const VS_RESTRICT d) noexcept;
