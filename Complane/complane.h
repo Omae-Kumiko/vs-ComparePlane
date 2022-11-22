@@ -1,5 +1,6 @@
 #ifndef COMPLANE_H
 #define COMPLANE_H
+#include <cstddef>
 #include "VapourSynth.h"
 #include "VSHelper.h"
 
