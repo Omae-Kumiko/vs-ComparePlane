@@ -161,7 +161,11 @@ void VS_CC versionCreate(const VSMap *in, VSMap *out, void *user_data, VSCore *c
 {
     vsapi->propSetData(out, "version", COMPLANE_VERSION, -1, paAppend);
 }
+extern "C" int __cpu_indicator_init(void);
 VS_EXTERNAL_API(void) VapourSynthPluginInit(VSConfigPlugin configFunc, VSRegisterFunction registerFunc, VSPlugin *plugin) {
+#if defined(__clang__) && defined(_WIN32) && !defined(__MSVCRT__)
+    __cpu_indicator_init(); // clang does not invoke this at startup when not building for mingw.
+#endif
     configFunc("com.amusementclub.complane", "complane", "VapourSynth compare plane and get score", VAPOURSYNTH_API_VERSION, 1, plugin);
     registerFunc("PSNR", "clip1:clip;clip2:clip;propname:data:opt;opt:int:opt;cache:int:opt", PSNRCreate, nullptr, plugin);
     registerFunc("Version", "", versionCreate, nullptr, plugin);

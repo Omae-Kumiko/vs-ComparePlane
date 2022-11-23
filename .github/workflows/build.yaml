@@ -1,0 +1,48 @@
+name: Build
+on:
+  - push
+  - release
+  - pull_request
+  - workflow_dispatch
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch:
+          - amd64
+          #- x86
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - name: install meson and ninja
+        run: pip install meson ninja
+      - name: Setup LLVM
+        shell: bash
+        run: |
+          curl -s -o llvm-win64.exe -LJO https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.5/LLVM-15.0.5-win64.exe
+          7z x -ollvm llvm-win64.exe
+
+      - name: download VS headers and patch header location
+        shell: bash
+        run: |
+          git clone https://github.com/AmusementClub/vapoursynth-classic --depth=1 --branch doodle2 vapoursynth
+          cp vapoursynth/include/*.h Complane/
+
+      - name: Meson setup
+        shell: bash
+        run: |
+          PATH="$(pwd)/llvm/bin:$PATH" CXX="$(pwd)/llvm/bin/clang++.exe" CXX_LD=lld meson setup builddir/
+      - name: Meson compile
+        shell: bash
+        run: PATH="$(pwd)/llvm/bin:$PATH" meson compile -C builddir/ -v
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-${{matrix.arch}}
+          path: |
+            builddir/complane.dll
